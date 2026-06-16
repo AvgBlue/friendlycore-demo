@@ -25,3 +25,9 @@ and `n`:
 where `t = (c - n/2) / (n - n/2)`.
 
 Published with GitHub Pages.
+
+## Point playground
+
+The repo also includes `playground.html`, an interactive FriendlyCore point demo.
+Users can add and drag points, choose the friend radius, and run randomized
+FriendlyCore filtering repeatedly to see which points enter the core.

@@ -48,6 +48,20 @@
       line-height: 1.45;
     }
 
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 20px;
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--blue);
+      background: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 360px minmax(0, 1fr);
@@ -342,6 +356,7 @@
       Move the sliders to see how the keep probability depends on the friend count.
       A point with few friends is removed; a point that is friends with everyone is always kept.
     </p>
+    <a class="nav-link" href="playground.html">Open draggable point playground</a>
 
     <div class="layout">
       <section class="panel" aria-label="Controls">
