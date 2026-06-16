@@ -300,7 +300,7 @@
     <h1>FriendlyCore Point Playground</h1>
     <p class="subtitle">
       Add points, drag them into clusters, choose the friendship radius, then run FriendlyCore.
-      Each run samples again, so points near the uncertain middle can change between presses.
+      Tap empty space to add a point, double tap a point to delete it, and run again to resample the core.
     </p>
     <a class="nav-link" href="index.html">Back to main index</a>
     <a class="nav-link" href="q-demo.html">Open q(c) curve demo</a>
@@ -371,7 +371,8 @@
       <p class="guide-text">
         Put many points close together and leave one or two far away. With a radius that covers the cluster, clustered points get high friend counts
         and outliers get low friend counts. Press the run button several times: points with q(c)=1 always stay, points with q(c)=0 always disappear,
-        and middle points may flip because FriendlyCore is randomized.
+        and middle points may flip because FriendlyCore is randomized. Tap empty space to add a point, drag points to move them, and double tap
+        a point to remove it.
       </p>
     </section>
   </main>
@@ -395,6 +396,9 @@
     let points = [];
     let nextId = 1;
     let activeId = null;
+    let dragStart = null;
+    let didDrag = false;
+    let lastPointTap = { id: null, time: 0 };
     let runCount = 0;
     let lastRun = new Map();
 
@@ -472,6 +476,17 @@
 
     function addRandomPoint() {
       points.push(makePoint(90 + Math.random() * 580, 70 + Math.random() * 340));
+      lastRun.clear();
+      runCount = 0;
+      render();
+    }
+
+    function removePoint(id) {
+      points = points.filter(point => point.id !== id);
+      activeId = null;
+      dragStart = null;
+      didDrag = false;
+      lastPointTap = { id: null, time: 0 };
       lastRun.clear();
       runCount = 0;
       render();
@@ -571,7 +586,16 @@
         render();
         return;
       }
-      activeId = Number(group.dataset.id);
+      const pointId = Number(group.dataset.id);
+      const now = Date.now();
+      if (lastPointTap.id === pointId && now - lastPointTap.time < 380) {
+        removePoint(pointId);
+        event.preventDefault();
+        return;
+      }
+      activeId = pointId;
+      dragStart = clientToSvg(event);
+      didDrag = false;
       board.setPointerCapture(event.pointerId);
     });
 
@@ -580,6 +604,9 @@
       const point = points.find(item => item.id === activeId);
       if (!point) return;
       const pos = clientToSvg(event);
+      if (dragStart && Math.hypot(pos.x - dragStart.x, pos.y - dragStart.y) > 5) {
+        didDrag = true;
+      }
       point.x = pos.x;
       point.y = pos.y;
       lastRun.clear();
@@ -588,7 +615,12 @@
     });
 
     board.addEventListener("pointerup", event => {
+      if (activeId !== null && !didDrag) {
+        lastPointTap = { id: activeId, time: Date.now() };
+      }
       activeId = null;
+      dragStart = null;
+      didDrag = false;
       if (board.hasPointerCapture(event.pointerId)) {
         board.releasePointerCapture(event.pointerId);
       }
@@ -596,6 +628,14 @@
 
     board.addEventListener("pointercancel", () => {
       activeId = null;
+      dragStart = null;
+      didDrag = false;
+    });
+
+    board.addEventListener("dblclick", event => {
+      const group = event.target.closest(".point");
+      if (!group) return;
+      removePoint(Number(group.dataset.id));
     });
 
     radiusSlider.addEventListener("input", () => {
