@@ -317,6 +317,7 @@
           <button id="addButton" type="button" class="secondary">Add point</button>
           <button id="presetButton" type="button" class="secondary">Cluster preset</button>
           <button id="clearButton" type="button" class="secondary">Clear result</button>
+          <button id="clearAllButton" type="button" class="secondary">Clear all points</button>
         </div>
 
         <div class="stats">
@@ -387,6 +388,7 @@
     const addButton = document.getElementById("addButton");
     const presetButton = document.getElementById("presetButton");
     const clearButton = document.getElementById("clearButton");
+    const clearAllButton = document.getElementById("clearAllButton");
     const nValue = document.getElementById("nValue");
     const keptValue = document.getElementById("keptValue");
     const cutoffValue = document.getElementById("cutoffValue");
@@ -647,6 +649,17 @@
     addButton.addEventListener("click", addRandomPoint);
     presetButton.addEventListener("click", resetPreset);
     clearButton.addEventListener("click", () => {
+      lastRun.clear();
+      runCount = 0;
+      render();
+    });
+    clearAllButton.addEventListener("click", () => {
+      points = [];
+      nextId = 1;
+      activeId = null;
+      dragStart = null;
+      didDrag = false;
+      lastPointTap = { id: null, time: 0 };
       lastRun.clear();
       runCount = 0;
       render();
