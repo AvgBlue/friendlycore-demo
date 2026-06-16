@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FriendlyCore q(c) Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c2430;
+      --muted: #657184;
+      --line: #d8e0ec;
+      --panel: #f6f8fb;
+      --blue: #3267d6;
+      --green: #168a5b;
+      --red: #c43b3b;
+      --gold: #b97300;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    main {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 28px auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 20px;
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--blue);
+      background: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 18px;
+    }
+
+    .control {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .function-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .function-options input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .function-options label {
+      display: grid;
+      justify-content: stretch;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .function-options input:checked + label {
+      border-color: var(--blue);
+      background: #eef3ff;
+      color: var(--blue);
+    }
+
+    .value {
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .formula {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .formula strong {
+      color: var(--blue);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .result {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .metric b {
+      font-size: 22px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-wrap {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .explain {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .points {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .dot {
+      height: 36px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #eef3ff;
+      color: var(--blue);
+    }
+
+    .dot.friend {
+      background: #e8f7f0;
+      color: var(--green);
+      border-color: #b9e4d1;
+    }
+
+    .dot.out {
+      background: #fff0f0;
+      color: var(--red);
+      border-color: #efcaca;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 1px solid #2454b8;
+      background: var(--blue);
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: var(--blue);
+    }
+
+    .sim-line {
+      margin-top: 12px;
+      min-height: 24px;
+      font-size: 15px;
+      color: var(--ink);
+    }
+
+    .study-guide {
+      margin-top: 24px;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+
+    .study-guide h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .guide-intro {
+      max-width: 860px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .guide-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px;
+    }
+
+    .guide-card h3 {
+      margin: 0 0 7px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .guide-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .shape-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .shape-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px;
+    }
+
+    .shape-card strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .shape-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 820px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .guide-grid,
+      .shape-list {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>FriendlyCore q(c) Demo</h1>
+    <p class="subtitle">
+      Move the sliders to see how the keep probability depends on the friend count.
+      A point with few friends is removed; a point that is friends with everyone is always kept.
+    </p>
+    <a class="nav-link" href="index.html">Back to main index</a>
+    <a class="nav-link" href="playground.html">Open draggable point playground</a>
+
+    <div class="layout">
+      <section class="panel" aria-label="Controls">
+        <div class="control">
+          <label for="nSlider">Dataset size n <span class="value" id="nValue">10</span></label>
+          <input id="nSlider" type="range" min="2" max="30" value="10">
+        </div>
+
+        <div class="control">
+          <label for="cSlider">Friend count c <span class="value" id="cValue">7</span></label>
+          <input id="cSlider" type="range" min="0" max="10" value="7">
+        </div>
+
+        <div class="control">
+          <span style="font-weight:700;font-size:15px">q shape</span>
+          <div class="function-options" aria-label="q shape">
+            <input id="shapeLinear" type="radio" name="shape" value="linear" checked>
+            <label for="shapeLinear">Linear</label>
+            <input id="shapeSmooth" type="radio" name="shape" value="smoothstep">
+            <label for="shapeSmooth">Smoothstep</label>
+            <input id="shapeSlow" type="radio" name="shape" value="slow">
+            <label for="shapeSlow">Slow start</label>
+            <input id="shapeFast" type="radio" name="shape" value="fast">
+            <label for="shapeFast">Fast start</label>
+          </div>
+        </div>
+
+        <div class="formula" aria-label="Formula">
+          <strong>Simplified q rule</strong>
+          <div>q(c) = 0, if c <= n/2</div>
+          <div>q(c) = 1, if c = n</div>
+          <div id="shapeFormula">Linear: q(c) = t between n/2 and n</div>
+        </div>
+
+        <div class="result">
+          <div class="metric">
+            <span>n/2 cutoff</span>
+            <b id="cutoffValue">5</b>
+          </div>
+          <div class="metric">
+            <span>q(c)</span>
+            <b id="qValue">0.40</b>
+          </div>
+          <div class="metric">
+            <span>decision</span>
+            <b id="decisionValue">maybe</b>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button id="runButton" type="button">Run keep/remove</button>
+          <button id="presetButton" class="secondary" type="button">Show outlier preset</button>
+        </div>
+        <div class="sim-line" id="simLine">Press run to sample once using q(c).</div>
+      </section>
+
+      <section>
+        <div class="chart-wrap">
+          <svg id="chart" viewBox="0 0 700 390" role="img" aria-label="Chart of q of c"></svg>
+        </div>
+
+        <p class="explain" id="explainText"></p>
+
+        <div class="panel" style="margin-top:16px">
+          <strong>Tiny dataset picture</strong>
+          <div class="points" id="points"></div>
+          <p class="explain">
+            Green points are the selected point's friends. Red points are not friends.
+            The algorithm only looks at the count c, then keeps this point with probability q(c).
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <section class="study-guide" aria-label="How to use this demo">
+      <h2>How to study with this page</h2>
+      <p class="guide-intro">
+        This demo is a small playground for the FriendlyCore filtering step. Pick one point, choose how many friends it has,
+        and watch how the function q(c) decides whether that point is kept in the core C.
+      </p>
+
+      <div class="guide-grid">
+        <article class="guide-card">
+          <h3>1. Set n</h3>
+          <p>
+            n is the dataset size. Increasing n moves the cutoff n/2, so a point needs more friends before it has any chance to be kept.
+          </p>
+        </article>
+        <article class="guide-card">
+          <h3>2. Set c</h3>
+          <p>
+            c is the friend count for the point you are testing. Green dots are friends; red dots are not friends.
+          </p>
+        </article>
+        <article class="guide-card">
+          <h3>3. Run a sample</h3>
+          <p>
+            The button draws one random number. If that number is below q(c), the point enters C; otherwise it is removed.
+          </p>
+        </article>
+      </div>
+
+      <div class="shape-list" aria-label="Function explanations">
+        <div class="shape-card">
+          <strong>Linear</strong>
+          <span>The easiest shape: every extra friend above n/2 increases q by the same amount.</span>
+        </div>
+        <div class="shape-card">
+          <strong>Smoothstep</strong>
+          <span>A gentle S-curve. It starts slowly, rises in the middle, and slows down near q=1.</span>
+        </div>
+        <div class="shape-card">
+          <strong>Slow start</strong>
+          <span>Stricter near the cutoff. A point needs to be strongly supported before q becomes large.</span>
+        </div>
+        <div class="shape-card">
+          <strong>Fast start</strong>
+          <span>More generous after the cutoff. Once c is above n/2, q rises quickly.</span>
+        </div>
+      </div>
+
+      <p class="guide-intro" style="margin-top:16px">
+        The important lecture idea is not the exact curve; it is the smooth transition. A hard jump from 0 to 1 could reveal too much
+        when one record is added or removed. A smooth q(c) makes the filtering step stable, which is why FriendlyCore can safely remove
+        outliers before private averaging or clustering.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const nSlider = document.getElementById("nSlider");
+    const cSlider = document.getElementById("cSlider");
+    const nValue = document.getElementById("nValue");
+    const cValue = document.getElementById("cValue");
+    const cutoffValue = document.getElementById("cutoffValue");
+    const qValue = document.getElementById("qValue");
+    const decisionValue = document.getElementById("decisionValue");
+    const simLine = document.getElementById("simLine");
+    const explainText = document.getElementById("explainText");
+    const points = document.getElementById("points");
+    const chart = document.getElementById("chart");
+    const runButton = document.getElementById("runButton");
+    const presetButton = document.getElementById("presetButton");
+    const shapeFormula = document.getElementById("shapeFormula");
+    const shapeInputs = Array.from(document.querySelectorAll("input[name='shape']"));
+
+    const shapes = {
+      linear: {
+        label: "Linear",
+        formula: "Linear: q(c) = t between n/2 and n",
+        apply: t => t,
+        note: "This is the simplest ramp: each extra friend raises q by the same amount."
+      },
+      smoothstep: {
+        label: "Smoothstep",
+        formula: "Smoothstep: q(c) = 3t^2 - 2t^3",
+        apply: t => t * t * (3 - 2 * t),
+        note: "This rises gently near both endpoints, so the curve has no sharp corner at 0 or 1."
+      },
+      slow: {
+        label: "Slow start",
+        formula: "Slow start: q(c) = t^2",
+        apply: t => t * t,
+        note: "This is stricter near n/2: a point needs many more friends before q becomes large."
+      },
+      fast: {
+        label: "Fast start",
+        formula: "Fast start: q(c) = sqrt(t)",
+        apply: t => Math.sqrt(t),
+        note: "This is more generous after n/2: q grows quickly once a point has enough friends."
+      }
+    };
+
+    function selectedShape() {
+      return document.querySelector("input[name='shape']:checked").value;
+    }
+
+    function q(c, n, shapeName) {
+      const cutoff = n / 2;
+      if (c <= cutoff) return 0;
+      if (c >= n) return 1;
+      const t = (c - cutoff) / (n - cutoff);
+      return shapes[shapeName].apply(t);
+    }
+
+    function svgEl(name, attrs = {}) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+      for (const [key, value] of Object.entries(attrs)) {
+        el.setAttribute(key, value);
+      }
+      return el;
+    }
+
+    function drawChart(n, c, shapeName) {
+      chart.innerHTML = "";
+      const margin = { left: 54, right: 24, top: 24, bottom: 50 };
+      const width = 700 - margin.left - margin.right;
+      const height = 390 - margin.top - margin.bottom;
+      const x = value => margin.left + (value / n) * width;
+      const y = value => margin.top + (1 - value) * height;
+
+      chart.appendChild(svgEl("rect", { x: 0, y: 0, width: 700, height: 390, fill: "#fff" }));
+
+      for (let i = 0; i <= 4; i++) {
+        const yy = margin.top + (i / 4) * height;
+        chart.appendChild(svgEl("line", { x1: margin.left, y1: yy, x2: margin.left + width, y2: yy, stroke: "#e6ebf2" }));
+      }
+
+      chart.appendChild(svgEl("line", { x1: margin.left, y1: margin.top + height, x2: margin.left + width, y2: margin.top + height, stroke: "#9aa8ba", "stroke-width": 1.5 }));
+      chart.appendChild(svgEl("line", { x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + height, stroke: "#9aa8ba", "stroke-width": 1.5 }));
+
+      const path = [];
+      for (let i = 0; i <= n; i++) {
+        path.push(`${i === 0 ? "M" : "L"} ${x(i)} ${y(q(i, n, shapeName))}`);
+      }
+      chart.appendChild(svgEl("path", { d: path.join(" "), fill: "none", stroke: "#3267d6", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+
+      const cutoffX = x(n / 2);
+      chart.appendChild(svgEl("line", { x1: cutoffX, y1: margin.top, x2: cutoffX, y2: margin.top + height, stroke: "#b97300", "stroke-width": 2, "stroke-dasharray": "8 7" }));
+
+      const selectedQ = q(c, n, shapeName);
+      chart.appendChild(svgEl("line", { x1: x(c), y1: y(0), x2: x(c), y2: y(selectedQ), stroke: "#c43b3b", "stroke-width": 2 }));
+      chart.appendChild(svgEl("line", { x1: margin.left, y1: y(selectedQ), x2: x(c), y2: y(selectedQ), stroke: "#c43b3b", "stroke-width": 2, "stroke-dasharray": "5 5" }));
+      chart.appendChild(svgEl("circle", { cx: x(c), cy: y(selectedQ), r: 8, fill: "#c43b3b" }));
+
+      const labels = [
+        ["0", margin.left, margin.top + height + 26],
+        ["n/2", cutoffX, margin.top + height + 26],
+        ["n", margin.left + width, margin.top + height + 26],
+        ["q(c)", margin.left - 34, margin.top + 5],
+        ["c", margin.left + width + 10, margin.top + height + 5],
+      ];
+      for (const [text, xx, yy] of labels) {
+        const t = svgEl("text", { x: xx, y: yy, fill: "#657184", "font-size": 15, "text-anchor": text === "q(c)" ? "start" : "middle" });
+        t.textContent = text;
+        chart.appendChild(t);
+      }
+
+      const markerLabel = svgEl("text", { x: x(c), y: Math.max(22, y(selectedQ) - 14), fill: "#c43b3b", "font-size": 15, "font-weight": 700, "text-anchor": "middle" });
+      markerLabel.textContent = `c=${c}, q=${selectedQ.toFixed(2)}`;
+      chart.appendChild(markerLabel);
+    }
+
+    function renderPoints(n, c) {
+      points.innerHTML = "";
+      for (let i = 1; i <= n; i++) {
+        const dot = document.createElement("div");
+        dot.className = "dot " + (i <= c ? "friend" : "out");
+        dot.textContent = i;
+        points.appendChild(dot);
+      }
+    }
+
+    function update() {
+      const n = Number(nSlider.value);
+      cSlider.max = String(n);
+      if (Number(cSlider.value) > n) cSlider.value = String(n);
+      const c = Number(cSlider.value);
+      const shapeName = selectedShape();
+      const shape = shapes[shapeName];
+      const prob = q(c, n, shapeName);
+      const cutoff = n / 2;
+
+      nValue.textContent = n;
+      cValue.textContent = c;
+      cutoffValue.textContent = cutoff % 1 === 0 ? cutoff.toFixed(0) : cutoff.toFixed(1);
+      qValue.textContent = prob.toFixed(2);
+      decisionValue.textContent = prob === 0 ? "remove" : prob === 1 ? "keep" : "maybe";
+      shapeFormula.textContent = shape.formula;
+
+      if (prob === 0) {
+        explainText.textContent = `Because c=${c} is at or below n/2=${cutoff}, this point has too few friends, so q(c)=0 and it is always removed.`;
+      } else if (prob === 1) {
+        explainText.textContent = `Because c=n=${n}, this point is friends with everyone, so q(c)=1 and it is always kept.`;
+      } else {
+        explainText.textContent = `Because c=${c} is between n/2=${cutoff} and n=${n}, the point is kept with probability q(c)=${prob.toFixed(2)} using the ${shape.label} shape. ${shape.note}`;
+      }
+
+      drawChart(n, c, shapeName);
+      renderPoints(n, c);
+    }
+
+    nSlider.addEventListener("input", update);
+    cSlider.addEventListener("input", update);
+    shapeInputs.forEach(input => input.addEventListener("change", update));
+
+    runButton.addEventListener("click", () => {
+      const n = Number(nSlider.value);
+      const c = Number(cSlider.value);
+      const shapeName = selectedShape();
+      const prob = q(c, n, shapeName);
+      const sample = Math.random();
+      const kept = sample < prob;
+      simLine.textContent = `Random draw ${sample.toFixed(2)} ${kept ? "<" : ">="} q(c)=${prob.toFixed(2)} with ${shapes[shapeName].label} -> ${kept ? "kept in C" : "removed"}.`;
+    });
+
+    presetButton.addEventListener("click", () => {
+      nSlider.value = "10";
+      cSlider.max = "10";
+      cSlider.value = "3";
+      simLine.textContent = "Outlier preset: only 3 friends out of 10, so q(c)=0.";
+      update();
+    });
+
+    update();
+  </script>
+</body>
+</html>

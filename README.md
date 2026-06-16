@@ -1,6 +1,13 @@
-# FriendlyCore q(c) Demo
+# FriendlyCore Interactive Demos
 
-A tiny interactive page for understanding the simplified FriendlyCore keep probability `q(c)`.
+A tiny interactive site for understanding FriendlyCore.
+
+The main page links to two demos:
+
+- `q-demo.html`: understand the simplified FriendlyCore keep probability `q(c)`.
+- `playground.html`: add and drag points, choose a friend radius, and run randomized FriendlyCore filtering.
+
+## q(c) demo
 
 - `n` is the dataset size.
 - `c` is the number of friends a selected point has.
