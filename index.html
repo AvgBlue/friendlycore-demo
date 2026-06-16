@@ -244,8 +244,88 @@
       color: var(--ink);
     }
 
+    .study-guide {
+      margin-top: 24px;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+
+    .study-guide h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .guide-intro {
+      max-width: 860px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .guide-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px;
+    }
+
+    .guide-card h3 {
+      margin: 0 0 7px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .guide-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .shape-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .shape-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px;
+    }
+
+    .shape-card strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .shape-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
     @media (max-width: 820px) {
       .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .guide-grid,
+      .shape-list {
         grid-template-columns: 1fr;
       }
 
@@ -335,6 +415,60 @@
         </div>
       </section>
     </div>
+
+    <section class="study-guide" aria-label="How to use this demo">
+      <h2>How to study with this page</h2>
+      <p class="guide-intro">
+        This demo is a small playground for the FriendlyCore filtering step. Pick one point, choose how many friends it has,
+        and watch how the function q(c) decides whether that point is kept in the core C.
+      </p>
+
+      <div class="guide-grid">
+        <article class="guide-card">
+          <h3>1. Set n</h3>
+          <p>
+            n is the dataset size. Increasing n moves the cutoff n/2, so a point needs more friends before it has any chance to be kept.
+          </p>
+        </article>
+        <article class="guide-card">
+          <h3>2. Set c</h3>
+          <p>
+            c is the friend count for the point you are testing. Green dots are friends; red dots are not friends.
+          </p>
+        </article>
+        <article class="guide-card">
+          <h3>3. Run a sample</h3>
+          <p>
+            The button draws one random number. If that number is below q(c), the point enters C; otherwise it is removed.
+          </p>
+        </article>
+      </div>
+
+      <div class="shape-list" aria-label="Function explanations">
+        <div class="shape-card">
+          <strong>Linear</strong>
+          <span>The easiest shape: every extra friend above n/2 increases q by the same amount.</span>
+        </div>
+        <div class="shape-card">
+          <strong>Smoothstep</strong>
+          <span>A gentle S-curve. It starts slowly, rises in the middle, and slows down near q=1.</span>
+        </div>
+        <div class="shape-card">
+          <strong>Slow start</strong>
+          <span>Stricter near the cutoff. A point needs to be strongly supported before q becomes large.</span>
+        </div>
+        <div class="shape-card">
+          <strong>Fast start</strong>
+          <span>More generous after the cutoff. Once c is above n/2, q rises quickly.</span>
+        </div>
+      </div>
+
+      <p class="guide-intro" style="margin-top:16px">
+        The important lecture idea is not the exact curve; it is the smooth transition. A hard jump from 0 to 1 could reveal too much
+        when one record is added or removed. A smooth q(c) makes the filtering step stable, which is why FriendlyCore can safely remove
+        outliers before private averaging or clustering.
+      </p>
+    </section>
   </main>
 
   <script>
