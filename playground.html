@@ -104,6 +104,10 @@
       gap: 10px;
     }
 
+    .wide-button {
+      grid-column: 1 / -1;
+    }
+
     button {
       min-height: 42px;
       border: 1px solid #2454b8;
@@ -317,7 +321,7 @@
           <button id="addButton" type="button" class="secondary">Add point</button>
           <button id="presetButton" type="button" class="secondary">Cluster preset</button>
           <button id="clearButton" type="button" class="secondary">Clear result</button>
-          <button id="clearAllButton" type="button" class="secondary">Clear all points</button>
+          <button id="clearAllButton" type="button" class="secondary wide-button">Clear all points</button>
         </div>
 
         <div class="stats">
