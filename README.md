@@ -14,4 +14,14 @@ q(c) = 1, if c = n
 q(c) rises smoothly between n/2 and n
 ```
 
+The page includes a toggle for several possible smooth shapes between `n/2`
+and `n`:
+
+- Linear: `q(c) = t`
+- Smoothstep: `q(c) = 3t^2 - 2t^3`
+- Slow start: `q(c) = t^2`
+- Fast start: `q(c) = sqrt(t)`
+
+where `t = (c - n/2) / (n - n/2)`.
+
 Published with GitHub Pages.

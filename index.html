@@ -81,6 +81,40 @@
       accent-color: var(--blue);
     }
 
+    .function-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .function-options input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .function-options label {
+      display: grid;
+      justify-content: stretch;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .function-options input:checked + label {
+      border-color: var(--blue);
+      background: #eef3ff;
+      color: var(--blue);
+    }
+
     .value {
       color: var(--blue);
       font-variant-numeric: tabular-nums;
@@ -241,11 +275,25 @@
           <input id="cSlider" type="range" min="0" max="10" value="7">
         </div>
 
+        <div class="control">
+          <span style="font-weight:700;font-size:15px">q shape</span>
+          <div class="function-options" aria-label="q shape">
+            <input id="shapeLinear" type="radio" name="shape" value="linear" checked>
+            <label for="shapeLinear">Linear</label>
+            <input id="shapeSmooth" type="radio" name="shape" value="smoothstep">
+            <label for="shapeSmooth">Smoothstep</label>
+            <input id="shapeSlow" type="radio" name="shape" value="slow">
+            <label for="shapeSlow">Slow start</label>
+            <input id="shapeFast" type="radio" name="shape" value="fast">
+            <label for="shapeFast">Fast start</label>
+          </div>
+        </div>
+
         <div class="formula" aria-label="Formula">
           <strong>Simplified q rule</strong>
           <div>q(c) = 0, if c <= n/2</div>
           <div>q(c) = 1, if c = n</div>
-          <div>q(c) rises smoothly between n/2 and n</div>
+          <div id="shapeFormula">Linear: q(c) = t between n/2 and n</div>
         </div>
 
         <div class="result">
@@ -303,12 +351,46 @@
     const chart = document.getElementById("chart");
     const runButton = document.getElementById("runButton");
     const presetButton = document.getElementById("presetButton");
+    const shapeFormula = document.getElementById("shapeFormula");
+    const shapeInputs = Array.from(document.querySelectorAll("input[name='shape']"));
 
-    function q(c, n) {
+    const shapes = {
+      linear: {
+        label: "Linear",
+        formula: "Linear: q(c) = t between n/2 and n",
+        apply: t => t,
+        note: "This is the simplest ramp: each extra friend raises q by the same amount."
+      },
+      smoothstep: {
+        label: "Smoothstep",
+        formula: "Smoothstep: q(c) = 3t^2 - 2t^3",
+        apply: t => t * t * (3 - 2 * t),
+        note: "This rises gently near both endpoints, so the curve has no sharp corner at 0 or 1."
+      },
+      slow: {
+        label: "Slow start",
+        formula: "Slow start: q(c) = t^2",
+        apply: t => t * t,
+        note: "This is stricter near n/2: a point needs many more friends before q becomes large."
+      },
+      fast: {
+        label: "Fast start",
+        formula: "Fast start: q(c) = sqrt(t)",
+        apply: t => Math.sqrt(t),
+        note: "This is more generous after n/2: q grows quickly once a point has enough friends."
+      }
+    };
+
+    function selectedShape() {
+      return document.querySelector("input[name='shape']:checked").value;
+    }
+
+    function q(c, n, shapeName) {
       const cutoff = n / 2;
       if (c <= cutoff) return 0;
       if (c >= n) return 1;
-      return (c - cutoff) / (n - cutoff);
+      const t = (c - cutoff) / (n - cutoff);
+      return shapes[shapeName].apply(t);
     }
 
     function svgEl(name, attrs = {}) {
@@ -319,7 +401,7 @@
       return el;
     }
 
-    function drawChart(n, c) {
+    function drawChart(n, c, shapeName) {
       chart.innerHTML = "";
       const margin = { left: 54, right: 24, top: 24, bottom: 50 };
       const width = 700 - margin.left - margin.right;
@@ -339,14 +421,14 @@
 
       const path = [];
       for (let i = 0; i <= n; i++) {
-        path.push(`${i === 0 ? "M" : "L"} ${x(i)} ${y(q(i, n))}`);
+        path.push(`${i === 0 ? "M" : "L"} ${x(i)} ${y(q(i, n, shapeName))}`);
       }
       chart.appendChild(svgEl("path", { d: path.join(" "), fill: "none", stroke: "#3267d6", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }));
 
       const cutoffX = x(n / 2);
       chart.appendChild(svgEl("line", { x1: cutoffX, y1: margin.top, x2: cutoffX, y2: margin.top + height, stroke: "#b97300", "stroke-width": 2, "stroke-dasharray": "8 7" }));
 
-      const selectedQ = q(c, n);
+      const selectedQ = q(c, n, shapeName);
       chart.appendChild(svgEl("line", { x1: x(c), y1: y(0), x2: x(c), y2: y(selectedQ), stroke: "#c43b3b", "stroke-width": 2 }));
       chart.appendChild(svgEl("line", { x1: margin.left, y1: y(selectedQ), x2: x(c), y2: y(selectedQ), stroke: "#c43b3b", "stroke-width": 2, "stroke-dasharray": "5 5" }));
       chart.appendChild(svgEl("circle", { cx: x(c), cy: y(selectedQ), r: 8, fill: "#c43b3b" }));
@@ -384,7 +466,9 @@
       cSlider.max = String(n);
       if (Number(cSlider.value) > n) cSlider.value = String(n);
       const c = Number(cSlider.value);
-      const prob = q(c, n);
+      const shapeName = selectedShape();
+      const shape = shapes[shapeName];
+      const prob = q(c, n, shapeName);
       const cutoff = n / 2;
 
       nValue.textContent = n;
@@ -392,29 +476,32 @@
       cutoffValue.textContent = cutoff % 1 === 0 ? cutoff.toFixed(0) : cutoff.toFixed(1);
       qValue.textContent = prob.toFixed(2);
       decisionValue.textContent = prob === 0 ? "remove" : prob === 1 ? "keep" : "maybe";
+      shapeFormula.textContent = shape.formula;
 
       if (prob === 0) {
         explainText.textContent = `Because c=${c} is at or below n/2=${cutoff}, this point has too few friends, so q(c)=0 and it is always removed.`;
       } else if (prob === 1) {
         explainText.textContent = `Because c=n=${n}, this point is friends with everyone, so q(c)=1 and it is always kept.`;
       } else {
-        explainText.textContent = `Because c=${c} is between n/2=${cutoff} and n=${n}, the point is kept with probability q(c)=${prob.toFixed(2)}. The smooth ramp prevents one extra friend from causing a huge jump.`;
+        explainText.textContent = `Because c=${c} is between n/2=${cutoff} and n=${n}, the point is kept with probability q(c)=${prob.toFixed(2)} using the ${shape.label} shape. ${shape.note}`;
       }
 
-      drawChart(n, c);
+      drawChart(n, c, shapeName);
       renderPoints(n, c);
     }
 
     nSlider.addEventListener("input", update);
     cSlider.addEventListener("input", update);
+    shapeInputs.forEach(input => input.addEventListener("change", update));
 
     runButton.addEventListener("click", () => {
       const n = Number(nSlider.value);
       const c = Number(cSlider.value);
-      const prob = q(c, n);
+      const shapeName = selectedShape();
+      const prob = q(c, n, shapeName);
       const sample = Math.random();
       const kept = sample < prob;
-      simLine.textContent = `Random draw ${sample.toFixed(2)} ${kept ? "<" : ">="} q(c)=${prob.toFixed(2)} -> ${kept ? "kept in C" : "removed"}.`;
+      simLine.textContent = `Random draw ${sample.toFixed(2)} ${kept ? "<" : ">="} q(c)=${prob.toFixed(2)} with ${shapes[shapeName].label} -> ${kept ? "kept in C" : "removed"}.`;
     });
 
     presetButton.addEventListener("click", () => {
